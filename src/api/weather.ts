@@ -8,6 +8,7 @@ if (!API_KEY) {
 
 const BASE_URL = "https://api.openweathermap.org/data/2.5";
 
+// --- TYPE DEFINITIONS ---
 export interface WeatherData {
   name: string;
   coord: {
@@ -37,12 +38,16 @@ export interface ForecastData {
     weather: { description: string; icon: string }[];
     dt_txt: string;
   }[];
-  // Added 'city' here because it is often needed for forecast titles
   city?: {
     name: string;
     coord: { lat: number; lon: number };
     country: string;
   };
+}
+
+export enum Unit {
+  Celsius = "metric",
+  Fahrenheit = "imperial"
 }
 
 // Helper to handle API errors consistently
@@ -56,22 +61,12 @@ const handleApiError = (error: unknown) => {
   }
 };
 
-export const getWeather = async (city: string): Promise<WeatherData> => {
-  try {
-    // 2. Used Generic <WeatherData> for better type safety
-    const response = await axios.get<WeatherData>(
-      `${BASE_URL}/weather?q=${city.trim()}&units=metric&appid=${API_KEY}`
-    );
-    return response.data;
-  } catch (error) {
-    return handleApiError(error);
-  }
-};
+// --- API FUNCTIONS (Updated to accept 'unit') ---
 
-export const getWeatherByCoords = async (lat: number, lon: number): Promise<WeatherData> => {
+export const getWeather = async (city: string, unit: string = "metric"): Promise<WeatherData> => {
   try {
     const response = await axios.get<WeatherData>(
-      `${BASE_URL}/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`
+      `${BASE_URL}/weather?q=${city.trim()}&units=${unit}&appid=${API_KEY}`
     );
     return response.data;
   } catch (error) {
@@ -79,10 +74,10 @@ export const getWeatherByCoords = async (lat: number, lon: number): Promise<Weat
   }
 };
 
-export const getForecast = async (city: string): Promise<ForecastData> => {
+export const getWeatherByCoords = async (lat: number, lon: number, unit: string = "metric"): Promise<WeatherData> => {
   try {
-    const response = await axios.get<ForecastData>(
-      `${BASE_URL}/forecast?q=${city.trim()}&units=metric&appid=${API_KEY}`
+    const response = await axios.get<WeatherData>(
+      `${BASE_URL}/weather?lat=${lat}&lon=${lon}&units=${unit}&appid=${API_KEY}`
     );
     return response.data;
   } catch (error) {
@@ -90,10 +85,21 @@ export const getForecast = async (city: string): Promise<ForecastData> => {
   }
 };
 
-export const getForecastByCoords = async (lat: number, lon: number): Promise<ForecastData> => {
+export const getForecast = async (city: string, unit: string = "metric"): Promise<ForecastData> => {
   try {
     const response = await axios.get<ForecastData>(
-      `${BASE_URL}/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`
+      `${BASE_URL}/forecast?q=${city.trim()}&units=${unit}&appid=${API_KEY}`
+    );
+    return response.data;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+export const getForecastByCoords = async (lat: number, lon: number, unit: string = "metric"): Promise<ForecastData> => {
+  try {
+    const response = await axios.get<ForecastData>(
+      `${BASE_URL}/forecast?lat=${lat}&lon=${lon}&units=${unit}&appid=${API_KEY}`
     );
     return response.data;
   } catch (error) {
